@@ -1,0 +1,17 @@
+body {
+    background-image: url('/static/BackgroundHealthcare.jpg');
+    background-size: cover; /* Past de afbeelding aan om de hele pagina te bedekken */
+    background-repeat: no-repeat; /* Voorkomt herhaling van de afbeelding */
+    background-position: center center; /* Zorgt ervoor dat de afbeelding gecentreerd is */
+    height: 100vh; /* Zorgt ervoor dat de pagina de volledige hoogte van het scherm bedekt */
+    margin: 0;
+}
+
+body {
+    background-image: url('/static/BackgroundGreen.jpeg');
+    background-size: cover; /* Past de afbeelding aan om de hele pagina te bedekken */
+    background-repeat: no-repeat; /* Voorkomt herhaling van de afbeelding */
+    background-position: center center; /* Zorgt ervoor dat de afbeelding gecentreerd is */
+    height: 100vh; /* Zorgt ervoor dat de pagina de volledige hoogte van het scherm bedekt */
+    margin: 0;
+}

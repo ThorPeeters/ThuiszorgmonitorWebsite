@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hartslag Grafiek</title>
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Live Hartslag Grafiek</h1>
+    <canvas id="hartslagGrafiek" width="800" height="400"></canvas>
+    
+    <script>
+        // WebSocket verbinding (pas deze URL aan naar je eigen server)
+        const socket = new WebSocket("ws://localhost:8003");
+
+        // Selecteer het canvas element
+        const ctx = document.getElementById('hartslagGrafiek').getContext('2d');
+
+        // Data voor de Chart.js grafiek
+        const hartslagData = {
+            labels: [], // Tijdstempels
+            datasets: [{
+                label: 'Hartslag (BPM)',
+                data: [], // Hartslagwaarden
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderWidth: 1,
+                tension: 0.4
+            }]
+        };
+
+        // Configuratie van de grafiek
+        const config = {
+            type: 'line',
+            data: hartslagData,
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'second'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Tijd'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Hartslag (BPM)'
+                        }
+                    }
+                }
+            }
+        };
+
+        // Maak de grafiek
+        const hartslagGrafiek = new Chart(ctx, config);
+
+        // Functie om nieuwe data toe te voegen
+        function voegMeerdereDataToe(waarden) {
+            const nu = new Date();
+
+            waarden.forEach((waarde, index) => {
+                // Voeg tijdstempels toe met een offset van 1 seconde per waarde
+                const tijd = new Date(nu.getTime() + index * 1000);
+
+                if (hartslagData.labels.length > 20) {
+                    hartslagData.labels.shift(); // Oude labels verwijderen
+                    hartslagData.datasets[0].data.shift(); // Oude data verwijderen
+                }
+
+                hartslagData.labels.push(tijd); // Nieuwe tijd toevoegen
+                hartslagData.datasets[0].data.push(waarde); // Nieuwe waarde toevoegen
+            });
+
+            hartslagGrafiek.update(); // Grafiek updaten
+        }
+
+        // WebSocket event handlers
+        socket.onopen = function() {
+            console.log("WebSocket verbinding geopend.");
+        };
+
+        socket.onmessage = function(event) {
+            try {
+                // Verwerk de ontvangen data (bijv. { "hartslagen": [72, 74, 75, 73, 70] })
+                const data = JSON.parse(event.data);
+                const hartslagLijst = data.hartslagen;
+
+                // Voeg de lijst met hartslagen toe aan de grafiek
+                voegMeerdereDataToe(hartslagLijst);
+            } catch (error) {
+                console.error("Fout bij verwerken van WebSocket-bericht:", error);
+            }
+        };
+
+        socket.onerror = function(error) {
+            console.error("WebSocket fout:", error);
+        };
+
+        socket.onclose = function() {
+            console.warn("WebSocket verbinding gesloten.");
+        };
+    </script>
+</body>
+</html>

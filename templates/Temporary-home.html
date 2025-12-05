@@ -1,0 +1,347 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #3dcf6f; /* Example: Light blue color */
+            color: white;
+        }
+
+        /* Header Title */
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        /* Dropdown Container */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Profile Picture */
+        .profile-picture {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%; /* Align directly below the profile picture */
+            right: 0;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        /* Dropdown Menu Buttons */
+        .dropdown-menu button {
+            background-color: white;
+            color: #3dcf6f;
+            border: none;
+            padding: 10px 15px;
+            text-align: left;
+            width: 100%;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .dropdown-menu button:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Show Dropdown when Hovering on Dropdown Container */
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px;
+            max-width: 1000px;
+        }
+
+        .card {
+            background-color: ghostwhite;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            text-align: left;
+            height: 230px;
+            width: auto;
+        }
+
+        .card h2 {
+            margin-top: 5px;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: black
+        }
+
+        .card p {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .black-text {
+            color: black;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .large-text {
+            font-size: 36px;
+            margin: 10px 0;
+            color: black;
+        }
+
+        .safe-zone {
+            color: green;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        
+        .top-right-button {
+            position: absolute;
+            top: 10px;        
+            right: 10px;      
+            padding: 10px 20px;
+            background-color: lightslategrey;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .top-right-button:hover {
+            background-color: #4580a0;
+        }
+        
+        .panda-image{
+            position: absolute;
+            top: 40px;
+            left : 10px;
+            padding: 10px 20px;
+            width: 180px;
+            height: 180px;
+            z-index: -1;
+        }
+        
+        .speech-bubble {
+            position: absolute;
+            top: 40px;
+            left: 180px;
+            background: #3dcf6f;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            width: fit-content;
+            font-family: Arial, sans-serif;
+            font-size: 22px;
+        }
+
+        .speech-bubble:after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 10px;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+            border-right-color: #3dcf6f;
+            border-left: 0;
+            margin-top: -10px;
+            margin-left: -10px;
+        }
+    </style>
+</head>
+<body>
+<header>
+        <div class="logo">Healthcare monitor</div>
+        <div class="dropdown">
+            <img src="https://via.placeholder.com/40" alt="Profile" class="profile-picture">
+            <div class="dropdown-menu">
+                <form action="{% url 'Account' %}" method="POST">
+                    {% csrf_token %}
+                    <button onclick="alert('Profile Clicked')">Account</button>
+                </form>
+                <form action="{% url 'Logout' %}" method="POST">
+                    {% csrf_token %}
+                    <button onclick="alert('Logout Clicked')">Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+<div class="speech-bubble" id="speechBubble">
+    Welcome, {{ name }}!
+</div>
+
+<img src="{% static 'pandalogo.jpg' %}" class="panda-image" alt = "pandalogo">
+
+    <div class="container">
+        <!-- Heartbeat Card -->
+        <div class="card" onmouseover="changeBubbleText('This is your current heart rate. It has to be between 40 and {{ max_heart_rate }} at all times.')" onmouseout="resetBubbleText()">
+            <h2>Heartbeat</h2>
+            <div id="heartbeat" class="large-text">Wachten op gegevens...</div>
+            <p class="black-text">- Your maximum heart rate equals {{ max_heart_rate }} bpm</p>
+            <div id="avgHeartRate" class="black-text">Your average heart rate is not determined yet.</div>
+            <div id="heartbeatWarning" class="safe-zone"></div>
+        </div>
+        
+        <!-- Saturation Card -->
+        <div class="card" onmouseover="changeBubbleText('This is your blood oxygen saturation level.')" onmouseout="resetBubbleText()">
+            <h2>Oxygen saturation</h2>
+            <div id="saturationValue" class="large-text">Wachten op gegevens...</div>
+            <div id="SaturationWarning" class="safe-zone"></div>
+        </div>
+        
+        <!-- Fall detection card -->
+        <div class="card" onmouseover="changeBubbleText('This widget will show you when an abrupt movement is detected, and warns your emergency contacts if you don\'t respond in time.')" onmouseout="resetBubbleText()">
+            <h2>Fall detection</h2>
+            <div id="Fallvalue" class="safe-zone">Wachten op gegevens...</div>
+        </div>
+        
+    </div>
+
+    <script>
+        const socket = new WebSocket('ws://localhost:8003/');  // WebSocket naar Server heartbeat
+
+        socket.onopen = function() {
+            console.log('WebSocket verbinding geopend');
+        };
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);  // Ontvangen JSON-bericht
+            const currentHeartRate = data.currentHeartRate;
+            const avgHeartRate = data.avgHeartRate;
+            
+            document.getElementById('heartbeat').innerText = `${currentHeartRate} bpm`;
+            document.getElementById('avgHeartRate').innerText = `- Your average heart rate since last connection equals ${avgHeartRate}`;
+            
+            if (currentHeartRate >= {{ max_heart_rate }}) {
+                document.getElementById('heartbeatWarning').innerText = `Warning, your current heart rate is too high! Please contact your doctor`;
+                document.getElementById('heartbeatWarning').style.color = 'red';
+            }
+            else {
+                document.getElementById('heartbeatWarning').innerText = 'Your heart rate is within the safe zone.';
+                document.getElementById('heartbeatWarning').style.color = 'green';
+            }
+        };
+
+        socket.onclose = function(event) {
+            console.log('WebSocket verbinding gesloten', event);
+        };
+
+        socket.onerror = function(error) {
+            console.error('WebSocket fout:', error);
+        };
+        
+        function changeBubbleText(newText) {
+        document.getElementById('speechBubble').firstChild.textContent = newText;
+        }
+    
+        function resetBubbleText() {
+            document.getElementById('speechBubble').firstChild.textContent = 'Welcome, {{ name }}!';
+        }
+        
+        const websocket = new WebSocket('ws://localhost:8004/');   //websocket naar server oxygen
+         websocket.onopen = function() {
+            console.log('WebSocket verbinding geopend');
+        };
+
+        websocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);  // Ontvangen JSON-bericht
+            const saturationValue = data.saturationValue;
+
+            
+            document.getElementById('saturationValue').innerText = `${saturationValue} %`;
+            
+            if (saturationValue <= 95 && saturationValue > 90) {
+                document.getElementById('SaturationWarning').innerText = `Warning, your oxygen saturation is getting low, please follow this closely or contact your doctor.`;
+                document.getElementById('SaturationWarning').style.color = 'red';
+            }
+            else if (saturationValue <= 90) {
+                document.getElementById('SaturationWarning').innerText = `Warning, your oxygen saturation is far too low, please contact your doctor.`;
+                document.getElementById('SaturationWarning').style.color = 'red';
+            }
+            else {
+                document.getElementById('SaturationWarning').innerText = 'Your oxygen saturation level is great! No further action is required.';
+                document.getElementById('SaturationWarning').style.color = 'green';
+            }
+        };
+
+        websocket.onclose = function(event) {
+            console.log('WebSocket verbinding gesloten', event);
+        };
+
+        websocket.onerror = function(error) {
+            console.error('WebSocket fout:', error);
+        };
+        
+        const websocket_fall = new WebSocket('ws://localhost:8002/');   //websocket naar server oxygen
+         websocket_fall.onopen = function() {
+            console.log('WebSocket verbinding geopend');
+        };
+
+        websocket_fall.onmessage = function(event) {
+            const data = JSON.parse(event.data);  // Ontvangen JSON-bericht
+            const boolean_has_fallen = data.boolean_has_fallen;
+            
+            if (boolean_has_fallen == true) {
+                document.getElementById('Fallvalue').innerText = `Warning, the sensor has detected that you've fallen. A message will be sent to your emergency contact in 15 seconds.`;
+                document.getElementById('Fallvalue').style.color = 'red';
+            }
+            else {
+                document.getElementById('Fallvalue').innerText = 'No abrupt movement is detected.';
+                document.getElementById('Fallvalue').style.color = 'green';
+            }
+        };
+
+        websocket_fall.onclose = function(event) {
+            console.log('WebSocket verbinding gesloten', event);
+        };
+
+        websocket_fall.onerror = function(error) {
+            console.error('WebSocket fout:', error);
+        };
+        
+        
+        
+    </script>
+        
+</body>
+</html>
